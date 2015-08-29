@@ -1,5 +1,6 @@
 (ns mtgweb.core
   (:require [mtgweb.handler :refer [app init destroy]]
+            [mtgweb.mtg :refer [fetch-card-db!]]
             [immutant.web :as immutant]
             [clojure.tools.nrepl.server :as nrepl]
             [taoensso.timbre :as timbre]
@@ -61,4 +62,5 @@
   (timbre/info "server started on port:" (:port @http-server)))
 
 (defn -main [& args]
+  (fetch-card-db!)
   (start-app args))
