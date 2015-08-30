@@ -16,8 +16,6 @@
 (when-not (.exists (clojure.java.io/as-file json-file))
   (copy-uri-to-file download-location json-file))
 
-(def p clojure.pprint/pprint)
-
 (def cards (atom []))
 
 (defn load-cards [] (sort-by :name (map second (parse-string (slurp "cards.json") true))))
