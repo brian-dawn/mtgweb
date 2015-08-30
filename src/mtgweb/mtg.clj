@@ -16,7 +16,7 @@
 (when-not (.exists (clojure.java.io/as-file json-file))
   (copy-uri-to-file download-location json-file))
 
-(def cards (atom []))
+(defonce cards (atom []))
 
 (defn load-cards [] (sort-by :name (map second (parse-string (slurp "cards.json") true))))
 
@@ -48,11 +48,14 @@
 
 (def un complement) ;; (un red?) sounds better than (complement red?)
 
+(def cmds (atom {}))
 (defmacro defc [name body]
-  ;; TODO other smart stuff maybe
-  '(def ~name ~body)
+  (let [evaled (eval body)]
+    (swap! cmds assoc (str name) evaled)
+    (intern *ns* name evaled)))
 
-  )
+
+
 
 ;;######################
 ;;# Attribute Readers
@@ -81,25 +84,25 @@
   (fn [c] (not-nil? (some #(= value %) (field c)))))
 
 (def color= (partial generic-test-builder :colors))
-(def black? (color= "Black"))
-(def red?   (color= "Red"))
-(def green? (color= "Green"))
-(def white? (color= "White"))
-(def blue?  (color= "Blue"))
+(defc black? (color= "Black"))
+(defc red?   (color= "Red"))
+(defc green? (color= "Green"))
+(defc white? (color= "White"))
+(defc blue?  (color= "Blue"))
 
-(def not-red?   (complement red?))
-(def not-green? (complement green?))
-(def not-white? (complement white?))
-(def not-blue?  (complement blue?))
-(def not-black? (complement black?))
+(defc not-red?   (complement red?))
+(defc not-green? (complement green?))
+(defc not-white? (complement white?))
+(defc not-blue?  (complement blue?))
+(defc not-black? (complement black?))
 
-(def colorless? (every-pred not-red? not-green? not-white? not-blue? not-black?))
+(defc colorless? (every-pred not-red? not-green? not-white? not-blue? not-black?))
 
-(def only-black? (every-pred not-red? not-green? not-white? not-blue? black?))
-(def only-red?   (every-pred red?     not-green? not-white? not-blue? not-black?))
-(def only-green? (every-pred not-red? green?     not-white? not-blue? not-black?))
-(def only-white? (every-pred not-red? not-green? white?     not-blue? not-black?))
-(def only-blue?  (every-pred not-red? not-green? not-white? blue?     not-black?))
+(defc only-black? (every-pred not-red? not-green? not-white? not-blue? black?))
+(defc only-red?   (every-pred red?     not-green? not-white? not-blue? not-black?))
+(defc only-green? (every-pred not-red? green?     not-white? not-blue? not-black?))
+(defc only-white? (every-pred not-red? not-green? white?     not-blue? not-black?))
+(defc only-blue?  (every-pred not-red? not-green? not-white? blue?     not-black?))
 
 (defn- optional-operator-test-builder
   "Used for the creation of comparison functions for numeric values."
@@ -133,30 +136,30 @@
        (-> (filter #(= (:format %) fmt) (:legalities c))
            first
            :legality))))
-(def modern-legal?    (legal= "Modern"))
-(def standard-legal?  (legal= "Standard"))
-(def commander-legal? (legal= "Commander"))
-(def legacy-legal?    (legal= "Legacy"))
-(def vintage-legal?   (legal= "Vintage"))
+(defc modern-legal?    (legal= "Modern"))
+(defc standard-legal?  (legal= "Standard"))
+(defc commander-legal? (legal= "Commander"))
+(defc legacy-legal?    (legal= "Legacy"))
+(defc vintage-legal?   (legal= "Vintage"))
 
 (def type= (partial generic-test-builder :type))
-(def artifact?     (type= "Artifact"))
-(def creature?     (type= "Creature"))
-(def land?         (type= "Land"))
-(def enchantment?  (type= "Enchantment"))
-(def planeswalker? (type= "Planeswalker"))
-(def instant?      (type= "Instant"))
-(def sorcery?      (type= "Sorcery"))
-(def tribal?       (type= "Tribal"))
+(defc artifact?     (type= "Artifact"))
+(defc creature?     (type= "Creature"))
+(defc land?         (type= "Land"))
+(defc enchantment?  (type= "Enchantment"))
+(defc planeswalker? (type= "Planeswalker"))
+(defc instant?      (type= "Instant"))
+(defc sorcery?      (type= "Sorcery"))
+(defc tribal?       (type= "Tribal"))
 
 (def supertype= (partial generic-test-builder :supertypes))
-(def legendary? (supertype= "Legendary"))
-(def snow?      (supertype= "Snow"))
-(def world?     (supertype= "World"))
-(def basic?     (supertype= "Basic"))
+(defc legendary? (supertype= "Legendary"))
+(defc snow?      (supertype= "Snow"))
+(defc world?     (supertype= "World"))
+(defc basic?     (supertype= "Basic"))
 
 (def subtype= (partial generic-test-builder :subtypes))
-(def angel?   (subtype= "Angel"))
+(defc angel?   (subtype= "Angel"))
 
 (defn has-text
   "Returns whether or not a card contains a regex expression. Ignores case."
@@ -169,7 +172,7 @@
                            (clojure.string/lower-case (:text c))))))))
 
 ;; Useful compositions.
-(def flample? (every-pred (has-text "flying") (has-text "trample") creature?))
+(defc flample? (every-pred (has-text "flying") (has-text "trample") creature?))
 
 ;;######################
 ;;# Find Functions
@@ -203,6 +206,10 @@
   (let [re (build-re (clojure.string/lower-case partial-name))]
     (sort-by #(match-strength (clojure.string/lower-case partial-name) (clojure.string/lower-case (:name %)))
              (filter #(re-matches re (clojure.string/lower-case (:name %))) cs))))
+
+(defn query [s cards]
+  (let [preds (re-seq #"[A-Za-z0-9\-\?]+" s)]
+    (apply choose cards (map #(get @cmds %) preds))))
 
 
 

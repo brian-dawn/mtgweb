@@ -12,26 +12,6 @@
             [ajax.core :refer [GET POST]])
   (:import goog.History))
 
-
-(defn home-page []
-  [:div.container
-   [:div.jumbotron
-    [:h1 "Welcome to mtgweb"]
-    [:p "Time to start building your site!"]
-    [:p [:a.btn.btn-primary.btn-lg {:href "http://luminusweb.net"} "Learn more »"]]]
-   [:div.row
-    [:div.col-md-12
-     [:h2 "Welcome to ClojureScript"]]]
-   (when-let [docs (session/get :docs)]
-     [:div.row
-      [:div.col-md-12
-       [:div {:dangerouslySetInnerHTML
-              {:__html (md->html docs)}}]]])])
-
-(def sample-card {:layout "normal", :name "Deadapult", :type "Enchantment", :colors ["Red"], :types ["Enchantment"], :cmc 3, :manaCost "{2}{R}", :printings ["PLS"], :legalities [{:format "Commander", :legality "Legal"} {:format "Freeform", :legality "Legal"} {:format "Invasion Block", :legality "Legal"} {:format "Legacy", :legality "Legal"} {:format "Prismatic", :legality "Legal"} {:format "Singleton 100", :legality "Legal"} {:format "Tribal Wars Legacy", :legality "Legal"} {:format "Vintage", :legality "Legal"}], :imageName "deadapult", :text "{R}, Sacrifice a {U} Zombie: Deadapult deals 2 damage to target creature or player.\nTarget judge sucks {U} at magic {G}."})
-
-;[:img {:src (street-view-url (@app-state :street) (@app-state :city))}]
-
 (def mana-symbol-urls {
                    "{0}" "http://mtgjson.com/images/0.png"
                    "{1}" "http://mtgjson.com/images/1.png"
@@ -53,7 +33,6 @@
               (r "}" "")
               (r "/" "")
               (clojure.string/lower-case)
-              
               )]
     (str "http://mtgjson.com/images/" s ".png"))
   )
@@ -86,11 +65,11 @@
 (defn magic [c]
   (when-not (empty? c)
     [:div
-     [:p [:b (:name c)] (when-not (nil? (:manaCost c)) [mana-symbols (:manaCost c)])
-      ]
+     [:p [:b (:name c)] (when-not (nil? (:manaCost c)) [mana-symbols (:manaCost c)])]
      [:p (:type c)]
      [:p
       [magic-text (:text c)]
+      [:hr]
 
       ]]))
 
@@ -109,7 +88,7 @@
            :on-change #(reset! value (-> % .-target .-value))}])
 
 (defn shared-state []
-  (let [val (reagent/atom "Akroma, Angel of Wrath")
+  (let [val (reagent/atom "")
         card (reagent/atom "{}")]
     (fn []
       [:div

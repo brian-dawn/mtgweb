@@ -4,7 +4,13 @@ body {
     height: 100%;
     padding-top: 10px;
     padding-left: 10px;
+    line-height: 100%;
 }
+
+p {
+    line-height: 10%;
+}
+
 
 .manacost {
     padding-right: 5px;

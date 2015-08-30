@@ -15,5 +15,6 @@
   (GET "/find" [name] (if (< 0 (.length name))
                         (generate-string (take 20 (mtg/fuzzy @mtg/cards name)))
                         "{}"))
+  (GET "/query" [query] (generate-string (mtg/query query @mtg/cards)))
   (GET "/docs" [] (ok (-> "docs/docs.md" io/resource slurp))))
 
