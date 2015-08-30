@@ -109,9 +109,10 @@
 
 
 ;; ###################### HTTP
+(defn get-base [] js/document.location.origin)
 
 (defn find-card-by-name [name a]
-  (go (let [resp (<! (http/get (str "http://localhost:3000/find?name=" name)))]
+  (go (let [resp (<! (http/get (str (get-base) "/find?name=" name)))]
         (reset! a (:body resp)))))
 
 (defn atom-input [value]
