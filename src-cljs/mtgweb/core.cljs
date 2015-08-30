@@ -12,18 +12,6 @@
             [ajax.core :refer [GET POST]])
   (:import goog.History))
 
-(defn navbar []
-  [:div.navbar.navbar-inverse.navbar-fixed-top
-   [:div.container
-    [:div.navbar-header
-     [:a.navbar-brand {:href "#/"} "myapp"]]
-    [:div.navbar-collapse.collapse
-     [:ul.nav.navbar-nav
-      [:li {:class (when (= :home (session/get :page)) "active")}
-       [:a {:href "#/"} "Home"]]
-      [:li {:class (when (= :about (session/get :page)) "active")}
-       [:a {:href "#/about"} "About"]]]]]])
-
 
 (defn home-page []
   [:div.container
@@ -141,18 +129,15 @@
 ;; ####################### 
 
 (defn about-page []
-  [:div.container
-   [:div.row
-    [:div.col-md-12
      [shared-state]
-     ]]])
+     )
 
 
 
 
 (def pages
-  {:home #'home-page
-   :about #'about-page})
+  {:home #'about-page
+   })
 
 (defn page []
   [(pages (session/get :page))])
@@ -163,9 +148,6 @@
 
 (secretary/defroute "/" []
   (session/put! :page :home))
-
-(secretary/defroute "/about" []
-  (session/put! :page :about))
 
 ;; -------------------------
 ;; History
@@ -184,7 +166,6 @@
   (GET "/docs" {:handler #(session/put! :docs %)}))
 
 (defn mount-components []
-  (reagent/render [#'navbar] (.getElementById js/document "navbar"))
   (reagent/render [#'page] (.getElementById js/document "app")))
 
 (defn init! []
